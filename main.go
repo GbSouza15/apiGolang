@@ -5,12 +5,22 @@ import (
 	"net/http"
 
 	api "github.com/GbSouza15/apiGolang/api/routes"
-	"github.com/GbSouza15/apiGolang/database"
+	"github.com/GbSouza15/apiGolang/config/db"
 )
 
 func main() {
 
-	database.ConectDb()
+	err := db.InitDb()
+
+	if err != nil {
+		panic(err)
+	}
+
+	err = db.CreateSchemaAndTable()
+
+	if err != nil {
+		panic(err)
+	}
 
 	api.RoutesApi()
 

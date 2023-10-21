@@ -5,9 +5,12 @@ import (
 	"net/http"
 
 	api "github.com/GbSouza15/apiGolang/api/routes"
+	"github.com/GbSouza15/apiGolang/database"
 )
 
 func main() {
+
+	database.ConectDb()
 
 	api.RoutesApi()
 

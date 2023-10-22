@@ -9,9 +9,7 @@ import (
 	_ "github.com/lib/pq"
 )
 
-var db *sql.DB
-
-func InitDb() error {
+func InitDb() *sql.DB {
 	var err error
 
 	godotenv.Load()
@@ -27,7 +25,7 @@ func InitDb() error {
 
 	connectString := fmt.Sprintf("user=%s dbname=%s password=%s host=%s port=%s sslmode=%s", user, dbname, pass, host, port, sslmode)
 
-	db, err = sql.Open("postgres", connectString)
+	db, err := sql.Open("postgres", connectString)
 
 	if err != nil {
 		panic(err)
@@ -35,17 +33,22 @@ func InitDb() error {
 
 	fmt.Println("Connected to database successfully.")
 
-	return nil
+	return db
 }
 
-func CreateSchemaAndTable() error {
+func CloseConnection(db *sql.DB) {
+	defer db.Close()
+}
+
+func CreateSchemaAndTable(db *sql.DB) {
 
 	createSchemaSQL := "CREATE SCHEMA IF NOT EXISTS api"
 
 	_, err := db.Exec(createSchemaSQL)
 
 	if err != nil {
-		return err
+		fmt.Println("Error creating schema: ", err.Error())
+		return
 	}
 
 	createTableSQL := "CREATE TABLE IF NOT EXISTS api.teste (id SERIAL PRIMARY KEY, name VARCHAR(255) NOT NULL)"
@@ -53,7 +56,8 @@ func CreateSchemaAndTable() error {
 	_, err = db.Exec(createTableSQL)
 
 	if err != nil {
-		return err
+		fmt.Println("Error creating table: ", err.Error())
+		return
 	}
 
 	checkExistSchema := "SELECT EXISTS(SELECT 1 FROM information_schema.tables WHERE table_schema = 'api')"
@@ -63,15 +67,14 @@ func CreateSchemaAndTable() error {
 	err = db.QueryRow(checkExistSchema).Scan(&exists)
 
 	if err != nil {
-		return err
+		fmt.Println("Error checking schema: ", err.Error())
+		return
 	}
 
 	if exists {
-		fmt.Println("Schema já existe!")
-
-		return nil
+		fmt.Println("Schema exists")
+		return
 	}
 
 	fmt.Println("Schema e tabela criados com sucesso!")
-	return nil
 }

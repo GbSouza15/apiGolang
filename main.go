@@ -1,32 +1,17 @@
 package main
 
 import (
-	"fmt"
-	"net/http"
-
-	api "github.com/GbSouza15/apiGolang/api/routes"
+	"github.com/GbSouza15/apiGolang/api/routes"
 	"github.com/GbSouza15/apiGolang/config/db"
 )
 
 func main() {
 
-	err := db.InitDb()
+	data := db.InitDb()
 
-	if err != nil {
-		panic(err)
-	}
+	db.CreateSchemaAndTable(data)
 
-	err = db.CreateSchemaAndTable()
+	routes.RoutesApi(data)
 
-	if err != nil {
-		panic(err)
-	}
-
-	api.RoutesApi()
-
-	fmt.Println("Server is running on port 8080")
-
-	if err := http.ListenAndServe(":8080", nil); err != nil {
-		panic(err)
-	}
+	db.CloseConnection(data)
 }
